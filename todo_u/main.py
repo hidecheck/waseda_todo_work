@@ -8,7 +8,6 @@ import db
 app = Flask(__name__)
 
 DB_NAME = db.DB_NAME
-
 TABLE_NAME = db.TABLE_NAME
 
 
@@ -24,7 +23,6 @@ def tasks(task_id=None):
     db.create_table()
 
     if request.method == "GET":
-
         if task_id:
             task = db.find_one(task_id)
             res = {"id": task[0], "content": task[1], "done": bool(task[2])}
