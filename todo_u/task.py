@@ -3,5 +3,3 @@ class Task:
         self.id = id
         self.content = content
         self.done = done
-
-# review
