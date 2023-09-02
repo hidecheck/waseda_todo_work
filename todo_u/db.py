@@ -27,7 +27,8 @@ def find_one(task_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM tasks WHERE id=?", [task_id])
-    task = cursor.fetchone()
+    row = cursor.fetchone()
+    task = {"id": row[0], "content": row[1], "done": bool(row[2])}
     conn.close()
     return task
 
@@ -52,19 +53,15 @@ def find_all():
     return tasks
 
 
-def update(task):
-    print("変更前")
-    task_id = task[0]
-    find_one(task_id)
-
+def update(task_id):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("UPDATE tasks SET done=? WHERE id=?", [1, task_id])
     conn.commit()
     conn.close()
 
-    print("変更後")
-    find_one(task_id)
+    new_task = find_one(task_id)
+    return new_task
 
 
 def delete(task_id):
@@ -73,3 +70,5 @@ def delete(task_id):
     cursor.execute("DELETE FROM tasks WHERE id=?", [task_id])
     conn.commit()
     conn.close()
+
+# review
