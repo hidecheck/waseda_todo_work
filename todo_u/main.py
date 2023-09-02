@@ -14,7 +14,7 @@ TABLE_NAME = db.TABLE_NAME
 @app.route("/")
 def home():
     message = "ToDo List"
-    return render_template("index.html", message=message)
+    return message
 
 
 @app.route("/api/tasks/<task_id>", methods=["GET", "PUT", "DELETE"])
@@ -25,8 +25,7 @@ def tasks(task_id=None):
     if request.method == "GET":
         if task_id:
             task = db.find_one(task_id)
-            res = {"id": task[0], "content": task[1], "done": bool(task[2])}
-            return res
+            return task
 
         else:
             tasks = db.find_all()
@@ -39,11 +38,9 @@ def tasks(task_id=None):
         return task, 201
 
     elif request.method == "PUT":
-        task = db.find_one(task_id)
-        db.update(task)
+        db.update(task_id)
         new_task = db.find_one(task_id)
-        res = {"id": new_task[0], "content": new_task[1], "done": bool(new_task[2])}
-        return res
+        return new_task
 
     elif request.method == "DELETE":
         db.delete(task_id)
