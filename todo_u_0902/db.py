@@ -2,7 +2,7 @@ import sqlite3
 
 DB_NAME = 'todo.db'
 TABLE_NAME = "tasks"
-CREATE_TASK_TABLE = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME}(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, done INTEGER DEFAULT false)"
+CREATE_TASK_TABLE = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME}(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, done INTEGER DEFAULT false,created_at TEXT)"
 
 
 def create_table():
@@ -12,10 +12,20 @@ def create_table():
     conn.close()
 
 
+# 現在時刻をセット
+def created_at():
+    now = datetime.now()
+    task["created_at"] = now.strftime("%Y/%m/%d %H:%M:%S")
+    return render_template("time.html", now=task["created_at"])
+
+
 def insert_task(task):
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    task["created_at"] =
+    now = datetime.now()
+    task["created_at"] = now.strftime("%Y/%m/%d %H:%M:%S")
+    cursor.execute(f"INSERT INTO {TABLE_NAME} (content, done, created_at) VALUES (?, ?, ?)",
+                   (task["content"], task["done"], task["created_at"]))
     task["id"] = cursor.lastrowid
     task["done"] = False
     conn.commit()
@@ -31,7 +41,8 @@ def find_one(id):
     task = {
         "id": row[0],
         "content": row[1],
-        "done": bool(row[2])
+        "done": bool(row[2]),
+        "created_at": row[3]
     }
     conn.close()
     return task
@@ -79,3 +90,16 @@ def delete(task_id):
     cursor.execute("DELETE FROM tasks WHERE id=?", [task_id])
     conn.commit()
     conn.close()
+
+
+def delete_all():
+    try:
+        conn = sqlite3.connect('todo.db')
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM tasks WHERE your_condition")
+        conn.commit()
+        print("削除が成功しました。")
+    except Exception as e:
+        print(f"削除中にエラーが発生しました: {e}")
+    finally:
+        conn.close()

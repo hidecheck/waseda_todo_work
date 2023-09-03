@@ -9,13 +9,6 @@ TABLE_NAME = db.TABLE_NAME
 CREATE_TASK_TABLE = f"CREATE TABLE IF NOT EXISTS task (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, done INTEGER DEFAULT false, created_at TEXT)"
 
 
-@app.route("/time")
-def created_at():
-    now = datetime.now()
-    str_now = now.strftime("%Y/%m/%d %H:%M:%S")
-    return render_template("time.html", now=str_now)
-
-
 @app.route('/')
 def home():
     message = 'ToDo List'
@@ -38,17 +31,16 @@ def handle_500(exception):
 
 
 @app.route('/api/tasks/<task_id>', methods=['GET', 'PUT', 'DELETE'])
-@app.route('/api/tasks', methods=['GET', 'POST'])
+@app.route('/api/tasks', methods=['GET', 'POST', 'DELETE'])
 def tasks(task_id=None):
+    if task_id and not task_id.isdigit():
+        return "Invalid task_id", 400
     db.create_table()
     if request.method == 'GET':
         if task_id:
-            # TODO これ
-            task = db.find_one(task_id)
             return task
 
         else:
-            # TODO これ
             tasks = db.find_all()
             res = {
                 'tasks': tasks
@@ -57,19 +49,23 @@ def tasks(task_id=None):
 
     elif request.method == 'POST':
         task = request.get_json()
-        # TODO これ
         task = db.insert_task(task)
         return task, 201
 
     elif request.method == 'PUT':
-        task = db.find_one(task_id)
         new_task = db.update(task_id)
         return new_task
 
     elif request.method == 'DELETE':
-        # TODO これ
-        db.delete(task_id)
-        return "ok", 204
+        if task_id:
+            db.delete(task_id)
+            return "ok", 204
+    else:
+        db.delete_all()
+        return "All tasks deleted", 204
+
+
+# 一括削除処理を追加する
 
 
 if __name__ == '__main__':
