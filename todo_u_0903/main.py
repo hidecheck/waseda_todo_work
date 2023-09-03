@@ -53,19 +53,26 @@ def tasks(task_id=None):
         return task, 201
 
     elif request.method == 'PUT':
+        task = db.find_one(task_id)
+        if not task:
+            return "Task not found", 404
         new_task = db.update(task_id)
         return new_task
 
+
     elif request.method == 'DELETE':
         if task_id:
+            task = db.find_one(task_id)
+            if not task:
+                return "Task not found", 404
             db.delete(task_id)
             return "ok", 204
-    else:
-        db.delete_all()
-        return "All tasks deleted", 204
-
-
-# 一括削除処理を追加する
+        else:
+            ret = db.delete_all()
+            if ret:
+                return "All tasks deleted", 204
+            else:
+                return "Deletion failed", 500
 
 
 if __name__ == '__main__':

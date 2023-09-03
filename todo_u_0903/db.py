@@ -1,8 +1,10 @@
+import logging
 import sqlite3
+from datetime import datetime
 
 DB_NAME = 'todo.db'
 TABLE_NAME = "tasks"
-CREATE_TASK_TABLE = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME}(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, done INTEGER DEFAULT false,created_at TEXT)"
+CREATE_TASK_TABLE = f"CREATE TABLE IF NOT EXISTS {TABLE_NAME}(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, done INTEGER DEFAULT false, created_at TEXT)"
 
 
 def create_table():
@@ -10,13 +12,6 @@ def create_table():
     cursor = conn.cursor()
     cursor.execute(CREATE_TASK_TABLE)
     conn.close()
-
-
-# 現在時刻をセット
-def created_at():
-    now = datetime.now()
-    task["created_at"] = now.strftime("%Y/%m/%d %H:%M:%S")
-    return render_template("time.html", now=task["created_at"])
 
 
 def insert_task(task):
@@ -60,11 +55,11 @@ def find_all():
     # タスクのリストを作成する
     tasks = []
     for row in cursor:
-        # TODO task にid, content, done をセットする
         task = {
             "id": row[0],
             "content": row[1],
-            "done": bool(row[2])
+            "done": bool(row[2]),
+            "created_at": row[3]
 
         }
 
@@ -93,13 +88,17 @@ def delete(task_id):
 
 
 def delete_all():
+    conn = None
     try:
         conn = sqlite3.connect('todo.db')
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tasks WHERE your_condition")
+        cursor.execute("DELETE FROM tasks")
         conn.commit()
-        print("削除が成功しました。")
+        logging.info("削除が成功しました。")
+        return True
     except Exception as e:
-        print(f"削除中にエラーが発生しました: {e}")
+        logging.info("削除中にエラーが発生しました。")
+        return False
     finally:
-        conn.close()
+        if conn:
+            conn.close()
